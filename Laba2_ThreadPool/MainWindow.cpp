@@ -9,26 +9,14 @@
 
 
 BOOL CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
-struct Thread
-{
-	char name[100];
-	int priority;
-	int id;
-};
-
-struct Task
-{
-	char name[20];
-	int priority;
-	int complexity;
-};
 
 
-Thread* thread = 0;
-Task* task = 0;
-int countThread = 0, complexity = 0, priorityThread = 0, priorityTask = 0, countTask = 0;
-CHAR priorityThreadLine[20] = "Высокий", complexityTask[20] = "Высокая", priorityTaskLine[20] = "Высокий";
-HWND hPriorityThread, hPriorityTask, hComplexity;
+
+Thread* threads = 0;
+Task* tasks= 0;
+int countThreads = 0, complex = 0, priorityThreads = 0, priorityTask = 0, countTasks = 0;
+CHAR priorityThreadsLine[20] = "1.Высокий", complexityTask[20] = "1.Высокая", priorityTaskLine[20] = "1.Высокий";
+HWND hPriorityThreads, hPriorityTask, hComplexity;
 
 Thread* AddThread(Thread* thread, const int countThread)
 {
@@ -61,22 +49,22 @@ void PrintAllThread(CHAR* nameThread, CHAR* allThread, HWND hAllThread)
 {
 	strcat_s(nameThread,20, "--");
 	strcat_s(allThread,255, nameThread);
-	strcat_s(allThread,255, priorityThreadLine);
+	strcat_s(allThread,255, priorityThreadsLine);
 	strcat_s(allThread,255, "\n");
 	SetWindowText(hAllThread, allThread);
 }
 
-Task* AddTask(Task* task, const int countTask)
+Task* AddTask(Task* task, const int countTasks)
 {
-	if (countTask == 0)
+	if (countTasks == 0)
 	{		
-		task = new Task[countTask + 1];
+		task = new Task[countTasks + 1];
 	}
 	else
 	{
-		Task* tempTask = new Task[countTask + 1];
+		Task* tempTask = new Task[countTasks + 1];
  
-		for (int i = 0; i < countTask; i++)
+		for (int i = 0; i < countTasks; i++)
 		{
 			tempTask[i] = task[i]; 
 		}
@@ -87,11 +75,11 @@ Task* AddTask(Task* task, const int countTask)
 	return task;
 }
 
-void setDataTask(Task* task, const int countTask, char* name,int priority, int complexity)
+void setDataTask(Task* task, const int countTasks, char* name,int priority, int complexity)
 {
-	strcpy_s(task[countTask].name, 20,  name);
-	task[countTask].priority = priority;	
-	task[countTask].complexity = complexity;
+	strcpy_s(task[countTasks].name, 20,  name);
+	task[countTasks].priority = priority;	
+	task[countTasks].complexity = complexity;
 }
 
 void PrintAllTask(CHAR* nameTask, CHAR* allTask, HWND hAllTask, CHAR* complexity)
@@ -132,12 +120,12 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 		{  
-			hPriorityThread = GetDlgItem(hwnd,IDC_PRIORITY_THREAD);
+			hPriorityThreads = GetDlgItem(hwnd,IDC_PRIORITY_THREAD);
 			hPriorityTask = GetDlgItem(hwnd, IDC_PRIORITY_TASK);
 			hComplexity= GetDlgItem(hwnd, IDC_COMPLEXITY);
 
 			SetIcon(hwnd);
-			SetStringComboBox(hPriorityThread, 0);
+			SetStringComboBox(hPriorityThreads, 0);
 			SetStringComboBox(hPriorityTask, 0);
 			SetStringComboBox(hComplexity, 0);
 			break;
@@ -149,8 +137,8 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				if (HIWORD(wParam) == CBN_SELENDOK)
 				{
-					priorityThread = SendMessage(hPriorityThread, CB_GETCURSEL, 0, 0);
-					SendMessage(hPriorityThread, CB_GETLBTEXT, priorityThread, (LPARAM)priorityThreadLine);
+					priorityThreads = SendMessage(hPriorityThreads, CB_GETCURSEL, 0, 0);
+					SendMessage(hPriorityThreads, CB_GETLBTEXT, priorityThreads, (LPARAM)priorityThreadsLine);
 				}
 			}
 			break;
@@ -167,8 +155,8 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				if (HIWORD(wParam) == CBN_SELENDOK)
 				{
-					complexity = SendMessage(hComplexity, CB_GETCURSEL, 0, 0);
-					SendMessage(hComplexity, CB_GETLBTEXT, complexity, (LPARAM)complexityTask);
+					complex = SendMessage(hComplexity, CB_GETCURSEL, 0, 0);
+					SendMessage(hComplexity, CB_GETLBTEXT, complex, (LPARAM)complexityTask);
 				}
 			}
 			break;
@@ -186,12 +174,12 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (nameThread[0] != 0)
 				{
 					GetWindowText(hAllThread, allThread, 255);
-					thread = AddThread(thread, countThread);
-					setDataThread(thread, countThread, nameThread, priorityThread);
-					countThread++;
+					threads = AddThread(threads, countThreads);
+					setDataThread(threads, countThreads, nameThread, priorityThreads);
+					countThreads++;
 					PrintAllThread(nameThread, allThread, hAllThread);
 					SetWindowText(hTextBoxNameThread,"");
-					_itoa_s(countThread,countThreadStr,10);
+					_itoa_s(countThreads,countThreadStr,10);
 					SetWindowText(hCountThread, countThreadStr);
 				}
 				else
@@ -202,32 +190,34 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				HWND hTextBoxNameTask = GetDlgItem(hwnd, IDC_NAME_TASK);
 				HWND hAllTask = GetDlgItem(hwnd, IDC_ALL_TASK);
-				HWND hCountTask = GetDlgItem(hwnd, IDC_COUNT_TASK);
+				HWND hcountTasks = GetDlgItem(hwnd, IDC_COUNT_TASK);
 
 				CHAR nameTask[20] = {""};
 				CHAR allTask[255]={""};
-				CHAR countTaskStr[2] = {""};
+				CHAR countTasksStr[2] = {""};
 
 				GetWindowText(hTextBoxNameTask, nameTask, 20);
 				if (nameTask[0] != 0)
 				{
 					GetWindowText(hAllTask, allTask, 255);
-					task = AddTask(task, countTask);
-					setDataTask(task, countTask, nameTask, priorityTask, complexity);
-					countTask++;
+					tasks = AddTask(tasks, countTasks);
+					setDataTask(tasks, countTasks, nameTask, priorityTask, complex);
+					countTasks++;
 					PrintAllTask(nameTask, allTask, hAllTask, complexityTask);
 					SetWindowText(hTextBoxNameTask, "");
-					_itoa_s(countTask,countTaskStr,10);
-					SetWindowText(hCountTask, countTaskStr);
+					_itoa_s(countTasks,countTasksStr,10);
+					SetWindowText(hcountTasks, countTasksStr);
 				}
 				else
 				MessageBox(hwnd,"Заполните все поля","Info",MB_OK);
 			}
 			break;
 		case IDC_START:
-			std::qsort(task,countTask,sizeof(Task),CompareTask);
-			std::qsort(thread,countThread,sizeof(Thread),CompareThread);
-			ThreadPool::ThreadPool(countThread,thread,countTask,task);
+			{
+				std::qsort(tasks,countTasks,sizeof(Task),CompareTask);
+				std::qsort(threads,countThreads,sizeof(Thread),CompareThread);
+				ThreadPool* threadPool = new ThreadPool(countThreads,threads,countTasks,tasks, hwnd);
+			}
 			break;
 		case IDCANCEL:
 			EndDialog(hwnd,0);

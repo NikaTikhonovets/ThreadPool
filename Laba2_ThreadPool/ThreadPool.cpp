@@ -4,12 +4,14 @@
 #include <fstream>
 #include <string>
 #include "string.h"
+#include "resource1.h"
 
 
 HANDLE * threadArray;
 int countThread,countTask, complexity, currThread;
 CHAR resultStr[1000];
 
+HWND hResultStr;
 
 
 Thread*  thread = 0;
@@ -40,8 +42,9 @@ void GetTasks(int countTask, Task* allTasks)
 	}
 }
 
-ThreadPool::ThreadPool(int countThreads, Thread* allThreads, int countTasks, Task* allTasks)
+ThreadPool::ThreadPool(int countThreads, Thread* allThreads, int countTasks, Task* allTasks, HWND hwnd)
 {
+	hResultStr = GetDlgItem(hwnd, IDC_RESULT);
 	countThread = countThreads;
 	countTask = countTasks;
 	GetThreads(countThread, allThreads);
@@ -52,15 +55,33 @@ ThreadPool::ThreadPool(int countThreads, Thread* allThreads, int countTasks, Tas
 	CreateThread(NULL, 0, ThreadPool::ManagementThread, this, 0, NULL);
 }
 
-static DWORD WINAPI Proc(LPVOID lpParam)
+static void GetStrExecute()
 {
-	int complexity = (int)lpParam + 1;
-	int sleep = 30000/complexity;
-	Sleep(sleep);
 	strcat_s(resultStr,1000,"Поток ");
 	strcat_s(resultStr,1000, thread[currThread].name);
 	strcat_s(resultStr,1000," выполнил функцию ");
 	strcat_s(resultStr,1000,task[currThread].name);
+	strcat_s(resultStr,1000,"!\n");
+}
+
+static void GetStrStart()
+{
+	strcat_s(resultStr,1000,"+Поток ");
+	strcat_s(resultStr,1000, thread[currThread].name);
+	strcat_s(resultStr,1000," начал выполнять функцию ");
+	strcat_s(resultStr,1000,task[currThread].name);
+	strcat_s(resultStr,1000,".\n\n");
+}
+
+static DWORD WINAPI Proc(LPVOID lpParam)
+{
+	GetStrStart();
+	SetWindowText(hResultStr, resultStr);
+	int complexity = (int)lpParam + 1;
+	int sleep = 30000/complexity;
+	Sleep(sleep);
+	GetStrExecute();
+	SetWindowText(hResultStr, resultStr);
 	return 1;
 }
 
@@ -71,7 +92,7 @@ void SignalHandler(int signal)
 		threadArray = (HANDLE *)calloc(countThread, sizeof(HANDLE));
 		for(int currentThread = 0; currentThread <= countThread - 1; currentThread++)
 		{
-			if (countTask>=currentThread)
+			if (countTask>currentThread)
 			{
 				complexity = task[currentThread].complexity;
 				currThread = currentThread;
@@ -80,12 +101,16 @@ void SignalHandler(int signal)
 				WriteMessage("Thread created!", thread[currentThread].id);
 			}
 		}
-    } 
+		strcat_s(resultStr,1000,"Превышение максимально допустимого количества работающих потоков\n");
+		SetWindowText(hResultStr, resultStr);
+    }
+	//exit(signal);
 }
 
 DWORD WINAPI ThreadPool::ManagementThread(PVOID thisContext)
 {
 	signal(SIGINT,SignalHandler);
+	raise(SIGINT);
 	return 1;
 }
 

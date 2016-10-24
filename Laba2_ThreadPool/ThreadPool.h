@@ -4,7 +4,7 @@
 #include "windows.h"
 
 
-
+ 
 
 struct Thread
 {
@@ -26,7 +26,7 @@ using namespace std;
 class ThreadPool
 {
 public:
-	ThreadPool(int countThreads, Thread* thread, int countTasks, Task* allTasks);
+	ThreadPool(int countThreads, Thread* thread, int countTasks, Task* allTasks, HWND hRes);
 	~ThreadPool();
 	static DWORD WINAPI ManagementThread(PVOID thisContext);
 };
