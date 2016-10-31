@@ -216,7 +216,8 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				std::qsort(tasks,countTasks,sizeof(Task),CompareTask);
 				std::qsort(threads,countThreads,sizeof(Thread),CompareThread);
-				ThreadPool* threadPool = new ThreadPool(countThreads,threads,countTasks,tasks, hwnd);
+				ThreadPool* threadPool = new ThreadPool(countThreads,threads, hwnd);
+				threadPool->GetAllTasks(tasks, countTasks);
 			}
 			break;
 		case IDCANCEL:

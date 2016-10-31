@@ -26,8 +26,9 @@ using namespace std;
 class ThreadPool
 {
 public:
-	ThreadPool(int countThreads, Thread* thread, int countTasks, Task* allTasks, HWND hRes);
+	ThreadPool(int countThreads, Thread* thread, HWND hRes);
 	~ThreadPool();
+	void GetAllTasks(Task* task, int countTasks);
 	static DWORD WINAPI ManagementThread(PVOID thisContext);
 };
 
